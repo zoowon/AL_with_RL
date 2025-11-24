@@ -1,9 +1,3 @@
-'''Active Learning Procedure in PyTorch.
-
-Reference:
-[Yoo et al. 2019] Learning Loss for Active Learning (https://arxiv.org/abs/1905.03677)
-'''
-
 # Python
 import os
 import random
@@ -33,11 +27,11 @@ from config import *
 from data.sampler import SubsetSequentialSampler
 
 # Seed
-random.seed("Inyoung Cho")
+random.seed("Reinforcement Learning")
 torch.manual_seed(0)
 torch.backends.cudnn.deterministic = True
 
-##
+## 데이터 로더
 # Data
 train_transform = T.Compose([
     T.RandomHorizontalFlip(),
