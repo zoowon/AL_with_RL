@@ -1,3 +1,8 @@
+"""
+명령어 : python main.py --dataset cifar10 --gpu 1
+데이터셋은 cifar10, cifar100, fashionmnist에서 고르면 됨
+"""
+
 # Python
 import argparse
 import os
@@ -18,7 +23,6 @@ import torchvision.transforms as T
 from torchvision.datasets import CIFAR100, CIFAR10, FashionMNIST
 
 # Utils
-import visdom
 from tqdm import tqdm
 
 # Custom
@@ -269,27 +273,21 @@ def main():
     parser.add_argument(
         "--dataset",
         default="cifar10",
-        choices=["cifar10", "cifar100", "fashionmnist"],
-        help="Dataset to use.",
+        choices=["cifar10", "cifar100", "fashionmnist"]
     )
     parser.add_argument(
-        "--data-root",
-        default="../data",
-        help="Root directory where torchvision datasets will be stored.",
-    )
-    parser.add_argument(
-        "--no-cuda",
-        action="store_true",
-        help="Force CPU execution even if CUDA is available.",
+        "--gpu",
+        type=int,
+        default=None
     )
 
     args = parser.parse_args()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    use_cuda = torch.cuda.is_available() and not args.no_cuda
-    device = torch.device("cuda" if use_cuda else "cpu")
     print(f"Using device: {device}")
 
-    active_learning_random(args.dataset, args.data_root, device)
+    data_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    active_learning_random(args.dataset, data_root, device)
 
 
 if __name__ == "__main__":
