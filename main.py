@@ -27,8 +27,8 @@ from tqdm import tqdm
 
 # Custom
 import models.resnet as resnet
+from models.sampler import SubsetSequentialSampler
 from config import *
-from data.sampler import SubsetSequentialSampler
 
 # Seed
 def set_seed(seed: int):
@@ -282,7 +282,14 @@ def main():
     )
 
     args = parser.parse_args()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if torch.cuda.is_available():
+        if args.gpu is not None:
+            device = torch.device(f"cuda:{args.gpu}")
+            torch.cuda.set_device(args.gpu)
+        else:
+            device = torch.device("cuda")
+    else:
+        device = torch.device("cpu")
 
     print(f"Using device: {device}")
 

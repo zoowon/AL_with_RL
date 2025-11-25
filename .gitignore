@@ -1,7 +1,5 @@
 # 데이터셋, 실험 결과 제외
-data/cifar10
-data/cifar100
-data/fashionmnist
+data/
 outputs/
 
 # 캐시/로그/임시 파일
