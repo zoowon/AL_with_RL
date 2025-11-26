@@ -1,6 +1,8 @@
 """
-명령어 : python main.py --dataset cifar10 --gpu 1
-데이터셋은 cifar10, cifar100, fashionmnist에서 고르면 됨
+명령어 : python main.py --dataset {dataset name} --method {sampling method name} --gpu {gpu num}
+데이터셋은 cifar10, cifar100, fashionmnist 중에서 선택
+Sampling method는 random, ~~ 중에서 선택
+GPU는 0, 1, 2 중 빈 곳으로 선택
 """
 
 # Python
@@ -300,7 +302,7 @@ def main():
         initial_labeled = INITIAL_LABELED
         addendum = ADDENDUM
 
-    # sampling 방법 결정
+    # Sampling 방법 선택
     method = args.method
 
     active_learning(args.dataset, data_root, device, method, initial_labeled, addendum)
