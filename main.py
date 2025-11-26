@@ -30,6 +30,9 @@ import models.resnet as resnet
 from models.sampler import SubsetSequentialSampler
 from config import *
 
+# Methods
+from methods.random import random_sampling
+
 # Seed
 def set_seed(seed: int):
     random.seed(seed)
@@ -169,19 +172,8 @@ def evaluate(model: nn.Module, dataloader: DataLoader, criterion: nn.Module, dev
     acc = correct / max(total, 1)
     return avg_loss, acc
 
-def random_sampling_step(labeled_indices: List[int], unlabeled_indices: List[int], addendum: int):
-    if len(unlabeled_indices) == 0:
-        return labeled_indices, unlabeled_indices
 
-    add_count = min(addendum, len(unlabeled_indices))
-    newly_labeled = random.sample(unlabeled_indices, add_count)
-
-    new_labeled = labeled_indices + newly_labeled
-    remaining_unlabeled = [idx for idx in unlabeled_indices if idx not in newly_labeled]
-    return new_labeled, remaining_unlabeled
-
-
-def active_learning_random(dataset_name: str, data_root: str, device: torch.device, initial_labeled: int,
+def active_learning(dataset_name: str, data_root: str, device: torch.device, initial_labeled: int,
     addendum: int,):
     train_set, test_set, num_classes = get_datasets(dataset_name, data_root)
 
@@ -191,7 +183,7 @@ def active_learning_random(dataset_name: str, data_root: str, device: torch.devi
     for trial in range(TRIALS):
         print(f"=== Trial {trial + 1}/{TRIALS} ===")
         # Different seed per trial for fair randomness
-        set_seed(RANDOM_SEED + trial)
+        set_seed(RANDOM_SEED)
 
         random.shuffle(all_indices)
         if initial_labeled > len(all_indices):
@@ -255,7 +247,7 @@ def active_learning_random(dataset_name: str, data_root: str, device: torch.devi
                 break
 
             # Randomly add addendum new labeled samples
-            labeled_set, unlabeled_indices = random_sampling_step(
+            labeled_set, unlabeled_indices = random_sampling(
                 labeled_set, unlabeled_indices, addendum
             )
 
@@ -301,7 +293,7 @@ def main():
     else:
         initial_labeled = INITIAL_LABELED
         addendum = ADDENDUM
-    active_learning_random(args.dataset, data_root, device, initial_labeled, addendum)
+    active_learning(args.dataset, data_root, device, initial_labeled, addendum)
 
 
 if __name__ == "__main__":
