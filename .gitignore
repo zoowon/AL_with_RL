@@ -1,6 +1,7 @@
 # 데이터셋, 실험 결과 제외
 data/
 outputs/
+log/
 
 # 캐시/로그/임시 파일
 __pycache__/
