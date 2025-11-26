@@ -1,3 +1,4 @@
+import random
 from typing import Tuple, List
 
 def random_sampling(labeled_indices: List[int], unlabeled_indices: List[int], addendum: int):
