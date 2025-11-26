@@ -181,7 +181,8 @@ def random_sampling_step(labeled_indices: List[int], unlabeled_indices: List[int
     return new_labeled, remaining_unlabeled
 
 
-def active_learning_random(dataset_name: str, data_root: str, device: torch.device):
+def active_learning_random(dataset_name: str, data_root: str, device: torch.device, initial_labeled: int,
+    addendum: int,):
     train_set, test_set, num_classes = get_datasets(dataset_name, data_root)
 
     num_train = len(train_set)
@@ -193,11 +194,11 @@ def active_learning_random(dataset_name: str, data_root: str, device: torch.devi
         set_seed(RANDOM_SEED + trial)
 
         random.shuffle(all_indices)
-        if INITIAL_LABELED > len(all_indices):
+        if initial_labeled > len(all_indices):
             raise ValueError("INITIAL_LABELED is larger than the available training samples.")
 
-        labeled_set = all_indices[:INITIAL_LABELED]
-        unlabeled_indices = all_indices[INITIAL_LABELED:]
+        labeled_set = all_indices[:initial_labeled]
+        unlabeled_indices = all_indices[initial_labeled:]
 
         # Model for this trial
         model = resnet.ResNet18(num_classes=num_classes).to(device)
@@ -253,9 +254,9 @@ def active_learning_random(dataset_name: str, data_root: str, device: torch.devi
                 print("  No unlabeled samples left. Stopping active learning cycles.")
                 break
 
-            # Randomly add ADDENDUM new labeled samples
+            # Randomly add addendum new labeled samples
             labeled_set, unlabeled_indices = random_sampling_step(
-                labeled_set, unlabeled_indices, ADDENDUM
+                labeled_set, unlabeled_indices, addendum
             )
 
         # Optionally: save model after last cycle of each trial
@@ -294,7 +295,13 @@ def main():
     print(f"Using device: {device}")
 
     data_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
-    active_learning_random(args.dataset, data_root, device)
+    if args.dataset.lower() == "cifar100":
+        initial_labeled = 2000
+        addendum = 2000
+    else:
+        initial_labeled = INITIAL_LABELED
+        addendum = ADDENDUM
+    active_learning_random(args.dataset, data_root, device, initial_labeled, addendum)
 
 
 if __name__ == "__main__":
