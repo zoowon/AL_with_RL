@@ -27,7 +27,6 @@ from torchvision.datasets import CIFAR100, CIFAR10, FashionMNIST
 
 # Utils
 import logging
-from tqdm import tqdm
 
 # Custom
 import models.resnet as resnet
@@ -211,83 +210,84 @@ def active_learning(dataset_name: str, data_root: str, device: torch.device, met
 
     num_train = len(train_set)
     all_indices = list(range(num_train))
+    set_seed(RANDOM_SEED)
 
-    for trial in range(TRIALS):
-        logger.info(f"=== Trial {trial + 1}/{TRIALS} ===")
-        # Different seed per trial for fair randomness
-        set_seed(RANDOM_SEED)
+    
+    logger.info(f"=== Trial {trial + 1}/{TRIALS} ===")
+    # Different seed per trial for fair randomness
+    set_seed(RANDOM_SEED)
 
-        random.shuffle(all_indices)
-        if initial_labeled > len(all_indices):
-            raise ValueError("INITIAL_LABELED is larger than the available training samples.")
+    random.shuffle(all_indices)
+    if initial_labeled > len(all_indices):
+        raise ValueError("INITIAL_LABELED is larger than the available training samples.")
 
-        labeled_set = all_indices[:initial_labeled]
-        unlabeled_indices = all_indices[initial_labeled:]
+    labeled_set = all_indices[:initial_labeled]
+    unlabeled_indices = all_indices[initial_labeled:]
 
-        # Model for this trial
-        model = resnet.ResNet18(num_classes=num_classes).to(device)
+    # Model for this trial
+    model = resnet.ResNet18(num_classes=num_classes).to(device)
 
-        for cycle in range(CYCLES):
-            logger.info(f"[Trial {trial + 1}/{TRIALS}] Cycle {cycle + 1}/{CYCLES}")
-            logger.info(f"Labeled set size: {len(labeled_set)}, Unlabeled set size: {len(unlabeled_indices)}")
+    for cycle in range(CYCLES):
+        logger.info(f"[Trial {trial + 1}/{TRIALS}] Cycle {cycle + 1}/{CYCLES}")
+        logger.info(f"Labeled set size: {len(labeled_set)}, Unlabeled set size: {len(unlabeled_indices)}")
 
-            # DataLoaders for current labeled set and test set
-            train_loader = DataLoader(
-                train_set,
-                batch_size=BATCH,
-                sampler=SubsetRandomSampler(labeled_set),
-                num_workers=NUM_WORKERS,
-                pin_memory=(device.type == "cuda"),
+        # DataLoaders for current labeled set and test set
+        train_loader = DataLoader(
+            train_set,
+            batch_size=BATCH,
+            sampler=SubsetRandomSampler(labeled_set),
+            num_workers=NUM_WORKERS,
+            pin_memory=(device.type == "cuda"),
+        )
+        test_loader = DataLoader(
+            test_set,
+            batch_size=BATCH,
+            shuffle=False,
+            num_workers=NUM_WORKERS,
+            pin_memory=(device.type == "cuda"),
+        )
+
+        # Optimization setup
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.SGD(
+            model.parameters(), lr=LR, momentum=MOMENTUM, weight_decay=WDECAY
+        )
+        scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=MILESTONES, gamma=GAMMA)
+
+        # Train for EPOCH epochs on current labeled set
+        for epoch in range(EPOCH):
+            train_loss, train_acc = train_one_epoch(
+                model, train_loader, criterion, optimizer, device
             )
-            test_loader = DataLoader(
-                test_set,
-                batch_size=BATCH,
-                shuffle=False,
-                num_workers=NUM_WORKERS,
-                pin_memory=(device.type == "cuda"),
-            )
+            scheduler.step()
 
-            # Optimization setup
-            criterion = nn.CrossEntropyLoss()
-            optimizer = optim.SGD(
-                model.parameters(), lr=LR, momentum=MOMENTUM, weight_decay=WDECAY
-            )
-            scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=MILESTONES, gamma=GAMMA)
-
-            # Train for EPOCH epochs on current labeled set
-            for epoch in range(EPOCH):
-                train_loss, train_acc = train_one_epoch(
-                    model, train_loader, criterion, optimizer, device
+            if (epoch + 1) % 10 == 0 or epoch == 0:
+                logger.info(
+                    f"  Epoch {epoch + 1:3d}/{EPOCH} | "
+                    f"loss {train_loss:.4f} | acc {train_acc * 100:.2f}%"
                 )
-                scheduler.step()
 
-                if (epoch + 1) % 10 == 0 or epoch == 0:
-                    logger.info(
-                        f"  Epoch {epoch + 1:3d}/{EPOCH} | "
-                        f"loss {train_loss:.4f} | acc {train_acc * 100:.2f}%"
-                    )
+        # Evaluate on test set
+        test_loss, test_acc = evaluate(model, test_loader, criterion, device)
+        logger.info(
+            f"  >> Test: loss {test_loss:.4f} | acc {test_acc * 100:.2f}%"
+        )
 
-            # Evaluate on test set
-            test_loss, test_acc = evaluate(model, test_loader, criterion, device)
-            logger.info(
-                f"  >> Test: loss {test_loss:.4f} | acc {test_acc * 100:.2f}%"
-            )
+        # If no unlabeled data remains, stop AL cycles
+        if len(unlabeled_indices) == 0:
+            logger.info("  No unlabeled samples left. Stopping active learning cycles.")
+            break
 
-            # If no unlabeled data remains, stop AL cycles
-            if len(unlabeled_indices) == 0:
-                logger.info("  No unlabeled samples left. Stopping active learning cycles.")
-                break
+        # add addendum new labeled samples
+        if method == "random":
+            labeled_set, unlabeled_indices = random_sampling(labeled_set, unlabeled_indices, addendum)
 
-            # add addendum new labeled samples
-            if method == "random":
-                labeled_set, unlabeled_indices = random_sampling(labeled_set, unlabeled_indices, addendum)
-
-        # Optionally: save model after last cycle of each trial
-        save_dir = os.path.join("./checkpoints", dataset_name.lower())
-        os.makedirs(save_dir, exist_ok=True)
-        save_path = os.path.join(save_dir, f"resnet18_random_trial{trial + 1}.pth")
-        torch.save({"state_dict": model.state_dict()}, save_path)
-        logger.info(f"Saved checkpoint to: {save_path}")
+    # Optionally: save model after last cycle of each trial
+    save_dir = os.path.join("./checkpoints", dataset_name.lower())
+    os.makedirs(save_dir, exist_ok=True)
+    save_path = os.path.join(save_dir, f"resnet18_{method}.pth")
+    torch.save({"state_dict": model.state_dict()}, save_path)
+    logger.info(f"Saved checkpoint to: {save_path}")
 
 
 def main():
