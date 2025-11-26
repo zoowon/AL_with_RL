@@ -1,3 +1,5 @@
+from typing import Tuple, List
+
 def random_sampling(labeled_indices: List[int], unlabeled_indices: List[int], addendum: int):
     if len(unlabeled_indices) == 0:
         return labeled_indices, unlabeled_indices

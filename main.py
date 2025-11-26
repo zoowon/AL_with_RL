@@ -173,8 +173,7 @@ def evaluate(model: nn.Module, dataloader: DataLoader, criterion: nn.Module, dev
     return avg_loss, acc
 
 
-def active_learning(dataset_name: str, data_root: str, device: torch.device, initial_labeled: int,
-    addendum: int,):
+def active_learning(dataset_name: str, data_root: str, device: torch.device, method:str, initial_labeled: int, addendum: int,):
     train_set, test_set, num_classes = get_datasets(dataset_name, data_root)
 
     num_train = len(train_set)
@@ -246,10 +245,9 @@ def active_learning(dataset_name: str, data_root: str, device: torch.device, ini
                 print("  No unlabeled samples left. Stopping active learning cycles.")
                 break
 
-            # Randomly add addendum new labeled samples
-            labeled_set, unlabeled_indices = random_sampling(
-                labeled_set, unlabeled_indices, addendum
-            )
+            # add addendum new labeled samples
+            if method == "random":
+                labeled_set, unlabeled_indices = random_sampling(labeled_set, unlabeled_indices, addendum)
 
         # Optionally: save model after last cycle of each trial
         save_dir = os.path.join("./checkpoints", dataset_name.lower())
@@ -269,12 +267,19 @@ def main():
         choices=["cifar10", "cifar100", "fashionmnist"]
     )
     parser.add_argument(
+        "--method",
+        default="random",
+        choices=["random"]  # 강화학습 방식 선택 가능하도록 추가 필수
+    )
+    parser.add_argument(
         "--gpu",
         type=int,
         default=None
     )
 
     args = parser.parse_args()
+
+    # GPU 선택
     if torch.cuda.is_available():
         if args.gpu is not None:
             device = torch.device(f"cuda:{args.gpu}")
@@ -286,6 +291,7 @@ def main():
 
     print(f"Using device: {device}")
 
+    # 데이터셋 선택에 따라 initial labeled data 개수 및 cycle 별 추가 labeled data 개수 설정
     data_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
     if args.dataset.lower() == "cifar100":
         initial_labeled = 2000
@@ -293,7 +299,11 @@ def main():
     else:
         initial_labeled = INITIAL_LABELED
         addendum = ADDENDUM
-    active_learning(args.dataset, data_root, device, initial_labeled, addendum)
+
+    # sampling 방법 결정
+    method = args.method
+
+    active_learning(args.dataset, data_root, device, method, initial_labeled, addendum)
 
 
 if __name__ == "__main__":
