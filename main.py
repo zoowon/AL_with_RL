@@ -9,6 +9,7 @@ GPU는 0, 1, 2 중 빈 곳으로 선택
 import argparse
 import os
 import random
+from datetime import datetime
 from typing import Tuple, List
 
 # Torch
@@ -25,6 +26,7 @@ import torchvision.transforms as T
 from torchvision.datasets import CIFAR100, CIFAR10, FashionMNIST
 
 # Utils
+import logging
 from tqdm import tqdm
 
 # Custom
@@ -42,6 +44,36 @@ def set_seed(seed: int):
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
+
+
+def setup_logger(dataset_name: str, method: str) -> logging.Logger:
+    logger = logging.getLogger("active_learning")
+    logger.setLevel(logging.INFO)
+
+    if logger.handlers:
+        logger.handlers.clear()
+
+    log_dir = os.path.join("logs", dataset_name.lower())
+    os.makedirs(log_dir, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_path = os.path.join(log_dir, f"{method}_{timestamp}.log")
+
+    formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+
+    file_handler = logging.FileHandler(log_path)
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+    logger.info(f"로그 파일 경로: {log_path}")
+
+    return logger
+
 
 def get_transforms(dataset_name: str):
     dataset_name = dataset_name.lower()
@@ -112,7 +144,6 @@ def get_datasets(dataset_name: str, data_root: str):
 
     # If NUM_TRAIN is smaller than the dataset size, we only use the first NUM_TRAIN samples
     if NUM_TRAIN is not None and NUM_TRAIN < len(train_set):
-        # torchvision CIFAR / MNIST 계열은 data & targets 속성을 가짐
         if hasattr(train_set, "data"):
             train_set.data = train_set.data[:NUM_TRAIN]
         if hasattr(train_set, "targets"):
@@ -175,14 +206,14 @@ def evaluate(model: nn.Module, dataloader: DataLoader, criterion: nn.Module, dev
     return avg_loss, acc
 
 
-def active_learning(dataset_name: str, data_root: str, device: torch.device, method:str, initial_labeled: int, addendum: int,):
+def active_learning(dataset_name: str, data_root: str, device: torch.device, method:str, initial_labeled: int, addendum: int, logger: logging.Logger):
     train_set, test_set, num_classes = get_datasets(dataset_name, data_root)
 
     num_train = len(train_set)
     all_indices = list(range(num_train))
 
     for trial in range(TRIALS):
-        print(f"=== Trial {trial + 1}/{TRIALS} ===")
+        logger.info(f"=== Trial {trial + 1}/{TRIALS} ===")
         # Different seed per trial for fair randomness
         set_seed(RANDOM_SEED)
 
@@ -197,8 +228,8 @@ def active_learning(dataset_name: str, data_root: str, device: torch.device, met
         model = resnet.ResNet18(num_classes=num_classes).to(device)
 
         for cycle in range(CYCLES):
-            print(f"\n[Trial {trial + 1}/{TRIALS}] Cycle {cycle + 1}/{CYCLES}")
-            print(f"Labeled set size: {len(labeled_set)}, Unlabeled set size: {len(unlabeled_indices)}")
+            logger.info(f"[Trial {trial + 1}/{TRIALS}] Cycle {cycle + 1}/{CYCLES}")
+            logger.info(f"Labeled set size: {len(labeled_set)}, Unlabeled set size: {len(unlabeled_indices)}")
 
             # DataLoaders for current labeled set and test set
             train_loader = DataLoader(
@@ -231,20 +262,20 @@ def active_learning(dataset_name: str, data_root: str, device: torch.device, met
                 scheduler.step()
 
                 if (epoch + 1) % 10 == 0 or epoch == 0:
-                    print(
+                    logger.info(
                         f"  Epoch {epoch + 1:3d}/{EPOCH} | "
                         f"loss {train_loss:.4f} | acc {train_acc * 100:.2f}%"
                     )
 
             # Evaluate on test set
             test_loss, test_acc = evaluate(model, test_loader, criterion, device)
-            print(
+            logger.info(
                 f"  >> Test: loss {test_loss:.4f} | acc {test_acc * 100:.2f}%"
             )
 
             # If no unlabeled data remains, stop AL cycles
             if len(unlabeled_indices) == 0:
-                print("  No unlabeled samples left. Stopping active learning cycles.")
+                logger.info("  No unlabeled samples left. Stopping active learning cycles.")
                 break
 
             # add addendum new labeled samples
@@ -256,7 +287,7 @@ def active_learning(dataset_name: str, data_root: str, device: torch.device, met
         os.makedirs(save_dir, exist_ok=True)
         save_path = os.path.join(save_dir, f"resnet18_random_trial{trial + 1}.pth")
         torch.save({"state_dict": model.state_dict()}, save_path)
-        print(f"Saved checkpoint to: {save_path}")
+        logger.info(f"Saved checkpoint to: {save_path}")
 
 
 def main():
@@ -280,6 +311,7 @@ def main():
     )
 
     args = parser.parse_args()
+    logger = setup_logger(args.dataset, args.method)
 
     # GPU 선택
     if torch.cuda.is_available():
@@ -291,7 +323,7 @@ def main():
     else:
         device = torch.device("cpu")
 
-    print(f"Using device: {device}")
+    logger.info(f"Using device: {device}")
 
     # 데이터셋 선택에 따라 initial labeled data 개수 및 cycle 별 추가 labeled data 개수 설정
     data_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
@@ -305,7 +337,7 @@ def main():
     # Sampling 방법 선택
     method = args.method
 
-    active_learning(args.dataset, data_root, device, method, initial_labeled, addendum)
+    active_learning(args.dataset, data_root, device, method, initial_labeled, addendum, logger)
 
 
 if __name__ == "__main__":
