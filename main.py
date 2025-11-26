@@ -276,7 +276,7 @@ def active_learning(dataset_name: str, data_root: str, device: torch.device, met
         if method == "random":
             labeled_set, unlabeled_indices = random_sampling(labeled_set, unlabeled_indices, addendum)
 
-    # Optionally: save model after last cycle of each trial
+    # Optionally: save model after last cycle
     save_dir = os.path.join("./checkpoints", dataset_name.lower())
     os.makedirs(save_dir, exist_ok=True)
     save_path = os.path.join(save_dir, f"resnet18_{method}.pth")
