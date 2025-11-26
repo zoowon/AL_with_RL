@@ -212,11 +212,6 @@ def active_learning(dataset_name: str, data_root: str, device: torch.device, met
     all_indices = list(range(num_train))
     set_seed(RANDOM_SEED)
 
-    
-    logger.info(f"=== Trial {trial + 1}/{TRIALS} ===")
-    # Different seed per trial for fair randomness
-    set_seed(RANDOM_SEED)
-
     random.shuffle(all_indices)
     if initial_labeled > len(all_indices):
         raise ValueError("INITIAL_LABELED is larger than the available training samples.")
@@ -224,11 +219,10 @@ def active_learning(dataset_name: str, data_root: str, device: torch.device, met
     labeled_set = all_indices[:initial_labeled]
     unlabeled_indices = all_indices[initial_labeled:]
 
-    # Model for this trial
     model = resnet.ResNet18(num_classes=num_classes).to(device)
 
     for cycle in range(CYCLES):
-        logger.info(f"[Trial {trial + 1}/{TRIALS}] Cycle {cycle + 1}/{CYCLES}")
+        logger.info(f"Cycle {cycle + 1}/{CYCLES}")
         logger.info(f"Labeled set size: {len(labeled_set)}, Unlabeled set size: {len(unlabeled_indices)}")
 
         # DataLoaders for current labeled set and test set
