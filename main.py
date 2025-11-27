@@ -141,7 +141,6 @@ def get_datasets(dataset_name: str, data_root: str):
     else:
         raise ValueError(f"Unsupported dataset: {dataset_name}")
 
-    # If NUM_TRAIN is smaller than the dataset size, we only use the first NUM_TRAIN samples
     if NUM_TRAIN is not None and NUM_TRAIN < len(train_set):
         if hasattr(train_set, "data"):
             train_set.data = train_set.data[:NUM_TRAIN]
@@ -164,7 +163,7 @@ def train_one_epoch(model: nn.Module, dataloader: DataLoader, criterion: nn.Modu
         labels = labels.to(device)
 
         optimizer.zero_grad()
-        outputs, _ = model(inputs)  # ResNet18 in resnet.py returns (logits, features)
+        outputs, _ = model(inputs)
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
@@ -225,7 +224,7 @@ def active_learning(dataset_name: str, data_root: str, device: torch.device, met
         logger.info(f"Cycle {cycle + 1}/{CYCLES}")
         logger.info(f"Labeled set size: {len(labeled_set)}, Unlabeled set size: {len(unlabeled_indices)}")
 
-        # DataLoaders for current labeled set and test set
+        # Cycle 별로 달라지는 labeled set과 test set에 대한 DataLoader 재정의 
         train_loader = DataLoader(
             train_set,
             batch_size=BATCH,
@@ -248,7 +247,7 @@ def active_learning(dataset_name: str, data_root: str, device: torch.device, met
         )
         scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=MILESTONES, gamma=GAMMA)
 
-        # Train for EPOCH epochs on current labeled set
+        # Cycle 별 labeled set에 대한 train
         for epoch in range(EPOCH):
             train_loss, train_acc = train_one_epoch(
                 model, train_loader, criterion, optimizer, device
@@ -261,22 +260,22 @@ def active_learning(dataset_name: str, data_root: str, device: torch.device, met
                     f"loss {train_loss:.4f} | acc {train_acc * 100:.2f}%"
                 )
 
-        # Evaluate on test set
+        # test set에 대한 evaluation 
         test_loss, test_acc = evaluate(model, test_loader, criterion, device)
         logger.info(
             f"  >> Test: loss {test_loss:.4f} | acc {test_acc * 100:.2f}%"
         )
 
-        # If no unlabeled data remains, stop AL cycles
+        # Unlabeled data가 남아있지 않으면 AL 정지
         if len(unlabeled_indices) == 0:
             logger.info("  No unlabeled samples left. Stopping active learning cycles.")
             break
 
-        # add addendum new labeled samples
+        # 여러 가지 방식으로 addendum만큼의 새로운 labeled samples 선택
         if method == "random":
             labeled_set, unlabeled_indices = random_sampling(labeled_set, unlabeled_indices, addendum)
 
-    # Optionally: save model after last cycle
+    # 마지막 cycle 이후 model 저장
     save_dir = os.path.join("./checkpoints", dataset_name.lower())
     os.makedirs(save_dir, exist_ok=True)
     save_path = os.path.join(save_dir, f"resnet18_{method}.pth")
