@@ -1,4 +1,5 @@
 # 데이터셋, 실험 결과 제외
+.idea/
 data/
 outputs/
 logs/
