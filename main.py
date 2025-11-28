@@ -1,7 +1,7 @@
 """
 명령어 : python main.py --dataset {dataset name} --method {sampling method name} --gpu {gpu num}
 데이터셋은 cifar10, cifar100, fashionmnist 중에서 선택
-Sampling method는 random, ~~ 중에서 선택
+Sampling method는 random, DQN, ~~ 중에서 선택
 GPU는 0, 1, 2 중 빈 곳으로 선택
 """
 
@@ -35,6 +35,7 @@ from config import *
 
 # Methods
 from methods.random import random_sampling
+from methods.DQN import DQNAgent, DQN_sampling
 
 # Seed
 def set_seed(seed: int):
@@ -219,6 +220,7 @@ def active_learning(dataset_name: str, data_root: str, device: torch.device, met
     unlabeled_indices = all_indices[initial_labeled:]
 
     model = resnet.ResNet18(num_classes=num_classes).to(device)
+    dqn_agent = None
 
     for cycle in range(CYCLES):
         logger.info(f"Cycle {cycle + 1}/{CYCLES}")
@@ -274,6 +276,8 @@ def active_learning(dataset_name: str, data_root: str, device: torch.device, met
         # 여러 가지 방식으로 addendum만큼의 새로운 labeled samples 선택
         if method == "random":
             labeled_set, unlabeled_indices = random_sampling(labeled_set, unlabeled_indices, addendum)
+        elif method =="DQN":
+            labeled_set, unlabeled_indices = DQN_sampling(labeled_set, unlabeled_indices, addendum, model, train_set, device, agent=dqn_agent, num_classes=num_classes)
 
     # 마지막 cycle 이후 model 저장
     save_dir = os.path.join("./checkpoints", dataset_name.lower())
@@ -295,7 +299,7 @@ def main():
     parser.add_argument(
         "--method",
         default="random",
-        choices=["random"]  # 강화학습 방식 선택 가능하도록 추가 필수
+        choices=["random", "DQN"]  # 강화학습 방식 선택 가능하도록 추가 필수
     )
     parser.add_argument(
         "--gpu",

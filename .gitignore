@@ -1,7 +1,6 @@
 # 데이터셋, 실험 결과 제외
-.idea/
 data/
-outputs/
+checkpoints/
 logs/
 
 # 캐시/로그/임시 파일
@@ -16,3 +15,6 @@ __pycache__/
 
 # Jupyter
 .ipynb_checkpoints/
+
+# 기타
+.idea/
