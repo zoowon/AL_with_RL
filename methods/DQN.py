@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import Dataset
+from tqdm import tqdm
 
 
 class ReplayBuffer:
@@ -102,7 +103,7 @@ class DQNAgent:
             return
 
         self.q_net.train()
-        for _ in range(grad_steps):
+        for _ in tqdm(range(grad_steps), desc="DQN train steps", leave=False):
             states, actions, rewards = self.buffer.sample(self.batch_size)
             states = states.to(self.device)
             actions = actions.to(self.device)
@@ -160,7 +161,7 @@ def _compute_states_for_pool(
     states: List[torch.Tensor] = []
 
     with torch.no_grad():
-        for idx in indices:
+        for idx in tqdm(indices, desc="DQN state 계산", leave=False):
             img, _ = dataset[int(idx)]
             # img: Tensor [C,H,W] 라고 가정 (transform에서 ToTensor 적용).
             if isinstance(img, np.ndarray):

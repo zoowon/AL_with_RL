@@ -277,7 +277,7 @@ def active_learning(dataset_name: str, data_root: str, device: torch.device, met
         if method == "random":
             labeled_set, unlabeled_indices = random_sampling(labeled_set, unlabeled_indices, addendum)
         elif method =="DQN":
-            labeled_set, unlabeled_indices = DQN_sampling(labeled_set, unlabeled_indices, addendum, model, train_set, device, agent=dqn_agent, num_classes=num_classes)
+            labeled_set, unlabeled_indices, dqn_agent = DQN_sampling(labeled_set, unlabeled_indices, addendum, model, train_set, device, agent=dqn_agent, num_classes=num_classes)
 
     # 마지막 cycle 이후 model 저장
     save_dir = os.path.join("./checkpoints", dataset_name.lower())
