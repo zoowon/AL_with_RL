@@ -10,7 +10,7 @@
 
 <a>![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-brightgreen.svg)</a>
 
-<img src="/asset/result.png" alt="Logo" width="100%">
+<img src="/asset/result.png" alt="Logo" width="300%">
 
 ## Installation
 1. 가상 환경 세팅
