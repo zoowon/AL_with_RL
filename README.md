@@ -20,13 +20,16 @@ setup.sh
 ```
 
 ## Train
-데이터셋, sampling 기법, gradient step (DQN 활용 시), GPU 번호 등을 선택하여 모델 훈련 및 cycle 별 test (evaluation) 진행
+데이터셋, sampling 기법, gradient step (DQN 활용 시), GPU 번호를 선택하여 모델 훈련 및 cycle 별 test 진행
 ```
 python main.py --dataset {dataset name} --method {sampling method name} --step {step} --gpu {gpu num}
 ```
 데이터셋은 cifar10, cifar100, fashionmnist 중에서 선택
+
 Sampling method는 random, DQN 중에서 선택
+
 Gradient step은 method가 DQN인 경우에만 int 형으로 기입 (이외에는 무효)
+
 GPU의 default값은 0
 
 ## Test
