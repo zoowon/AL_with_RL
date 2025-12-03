@@ -3,7 +3,7 @@
 데이터셋은 cifar10, cifar100, fashionmnist 중에서 선택
 Sampling method는 random, DQN 중에서 선택
 Training step은 method가 DQN인 경우에만 int 형으로 기입 (이외에는 무효)
-GPU는 0, 1, 2 중 빈 곳으로 선택
+GPU의 default값은 0
 """
 
 # Python
@@ -319,7 +319,7 @@ def main():
     parser.add_argument(
         "--gpu",
         type=int,
-        default=None
+        default=0
     )
 
     args = parser.parse_args()
