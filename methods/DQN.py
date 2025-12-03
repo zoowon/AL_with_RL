@@ -12,18 +12,17 @@ from tqdm import tqdm
 
 class ReplayBuffer:
     """간단한 리플레이 버퍼 (state, action, reward만 저장: contextual bandit 설정)."""
-
-    def __init__(self, capacity: int = 10000) -> None:
+    def __init__(self, capacity: int = 10000):
         self.capacity = capacity
         self.states: List[torch.Tensor] = []
         self.actions: List[int] = []
         self.rewards: List[float] = []
         self.pos = 0
 
-    def __len__(self) -> int:
+    def __len__(self):
         return len(self.states)
 
-    def push(self, state: torch.Tensor, action: int, reward: float) -> None:
+    def push(self, state: torch.Tensor, action: int, reward: float):
         """state는 CPU tensor로 저장 (나중에 device로 옮겨서 사용)."""
         state = state.detach().cpu()
         if len(self.states) < self.capacity:
@@ -36,7 +35,7 @@ class ReplayBuffer:
             self.rewards[self.pos] = float(reward)
             self.pos = (self.pos + 1) % self.capacity
 
-    def sample(self, batch_size: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def sample(self, batch_size: int):
         idxs = np.random.choice(len(self.states), batch_size, replace=False)
         states = torch.stack([self.states[i] for i in idxs], dim=0)
         actions = torch.tensor([self.actions[i] for i in idxs], dtype=torch.long)
@@ -47,17 +46,17 @@ class ReplayBuffer:
 class QNetwork(nn.Module):
     """state → Q(s,a) (a∈{0,1})를 출력하는 간단한 MLP."""
 
-    def __init__(self, state_dim: int, hidden_dim: int = 128, n_actions: int = 2) -> None:
+    def __init__(self, state_dim: int, hidden_dim: int = 128, n_actions: int = 2):
         super().__init__()
         self.net = nn.Sequential(
             nn.Linear(state_dim, hidden_dim),
             nn.ReLU(inplace=True),
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(inplace=True),
-            nn.Linear(hidden_dim, n_actions),
+            nn.Linear(hidden_dim, n_actions)
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor):
         return self.net(x)
 
 
@@ -76,8 +75,8 @@ class DQNAgent:
         hidden_dim: int = 128,
         lr: float = 1e-3,
         buffer_capacity: int = 10000,
-        batch_size: int = 64,
-    ) -> None:
+        batch_size: int = 64
+    ):
         self.device = device
         self.n_actions = n_actions
         self.batch_size = batch_size
@@ -86,15 +85,15 @@ class DQNAgent:
         self.optimizer = optim.Adam(self.q_net.parameters(), lr=lr)
         self.buffer = ReplayBuffer(capacity=buffer_capacity)
 
-    def q_values(self, states: torch.Tensor) -> torch.Tensor:
+    def q_values(self, states: torch.Tensor):
         """states: [N, state_dim] (device로 옮긴 뒤 호출)."""
         return self.q_net(states)
 
-    def add_transition(self, state: torch.Tensor, action: int, reward: float) -> None:
+    def add_transition(self, state: torch.Tensor, action: int, reward: float):
         """단일 transition 저장 (state는 CPU tensor로 저장)."""
         self.buffer.push(state, action, reward)
 
-    def train_step(self, grad_steps: int = 1) -> None:
+    def train_step(self, grad_steps: int = 1):
         """
         replay buffer에서 미니배치를 여러 번 뽑아서 학습.
         target = reward (γ=0인 contextual bandit 형태).
@@ -121,7 +120,7 @@ class DQNAgent:
             self.optimizer.step()
 
 
-def _build_state_from_logits(logits: torch.Tensor, num_classes: int) -> torch.Tensor:
+def _build_state_from_logits(logits: torch.Tensor, num_classes: int):
     """
     분류기 logits → state 벡터 생성.
     - softmax 확률 C개
@@ -151,8 +150,8 @@ def _compute_states_for_pool(
     dataset: Dataset,
     indices: Sequence[int],
     device: torch.device,
-    num_classes: int,
-) -> torch.Tensor:
+    num_classes: int
+):
     """
     unlabeled pool 전체에 대해 state tensor 계산.
     - 반환: states [N, state_dim] (CPU tensor)
@@ -197,8 +196,8 @@ def DQN_sampling(
     device: torch.device,
     agent: Optional[DQNAgent] = None,
     num_classes: int = 10,
-    train_steps: int = 200,
-) -> Tuple[List[int], np.ndarray, DQNAgent]:
+    train_steps: int = 200
+):
     """
     DQN 기반 Active Learning 샘플러 (top-K 버전).
 
@@ -246,7 +245,7 @@ def DQN_sampling(
         dataset=train_set,
         indices=unlabeled_array,
         device=device,
-        num_classes=num_classes,
+        num_classes=num_classes
     )  # [N, state_dim]
 
     if states.shape[0] == 0:
@@ -265,8 +264,8 @@ def DQN_sampling(
             hidden_dim=128,
             lr=1e-3,
             buffer_capacity=10000,
-            batch_size=64,
-        )
+            batch_size=64
+            )
 
     # 3) 현재 Q-network로 Q(s,1) score 계산
     agent.q_net.eval()
