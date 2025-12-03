@@ -16,13 +16,14 @@
 ## Installation
 1. 가상 환경 세팅
 ```
-conda create -n RL python=3.8
+conda create -n RL python=3.8 -y
 conda activate RL
 ```
 2. 환경 setup
 ```
 setup.sh
 ```
+3. 데이터셋 세팅 : train 및 test 코드 실행 시 자동으로 다운로드 (torchvision)
 
 ## Train
 데이터셋, sampling 기법, gradient step (DQN 활용 시), GPU 번호를 선택하여 모델 훈련 및 cycle 별 test 진행
