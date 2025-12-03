@@ -3,13 +3,9 @@
 # 2025-2 강화학습 프로젝트 : Active Learning for Image Classification with Reinforcement Learning
 
 <b>Yoon Seo Park</b>, <b>Joo Won Park</b>
-<img src="asset/logo_sogang.png" style="width:1000px; hight:345px; vertical-align: middle;">
-
-</div>
-
 <a>![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-brightgreen.svg)</a>
 
-<img src="/asset/result.png" alt="Logo" width="100%">
+<img src="/asset/result.png" alt="Logo" width="100%"></div>
 
 ## Installation
 1. 가상 환경 세팅
