@@ -4,7 +4,7 @@
 
 <b>Yoon Seo Park</b>, <b>Joo Won Park</b>
 
-<b>Dept. of CSE, Sogang University</b>
+<b>Dept. of Computer Science & Engineering, Sogang University</b>
 
 <a>![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-brightgreen.svg)</a>
 
