@@ -11,7 +11,7 @@
 <img src="/asset/result.png" alt="Logo" width="100%"></div>
 
 ## About Project
-프로젝트에 대한 설명은 [링크](https://www.google.com)를 통해 확인 부탁드립니다.
+프로젝트에 대한 설명은 [프로젝트 보고서](https://www.google.com)를 통해 확인 부탁드립니다.
 
 ## Installation
 1. 가상 환경 세팅
