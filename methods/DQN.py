@@ -94,7 +94,7 @@ class DQNAgent:
         """단일 transition 저장 (state는 CPU tensor로 저장)."""
         self.buffer.push(state, action, reward)
 
-    def train_step(self, grad_steps: int = 1):
+    def train_step(self, grad_steps: int = 200):
         """
         replay buffer에서 미니배치를 여러 번 뽑아서 학습.
         target = reward (γ=0인 contextual bandit 형태).

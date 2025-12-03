@@ -1,7 +1,8 @@
 """
-명령어 : python main.py --dataset {dataset name} --method {sampling method name} --gpu {gpu num}
+명령어 : python main.py --dataset {dataset name} --method {sampling method name} --step {step} --gpu {gpu num}
 데이터셋은 cifar10, cifar100, fashionmnist 중에서 선택
-Sampling method는 random, DQN, ~~ 중에서 선택
+Sampling method는 random, DQN 중에서 선택
+Training step은 method가 DQN인 경우에만 int 형으로 기입 (이외에는 무효)
 GPU는 0, 1, 2 중 빈 곳으로 선택
 """
 
@@ -47,7 +48,7 @@ def set_seed(seed: int):
         torch.cuda.manual_seed_all(seed)
 
 
-def setup_logger(dataset_name: str, method: str):
+def setup_logger(dataset_name: str, method: str, step: int):
     logger = logging.getLogger("active_learning")
     logger.setLevel(logging.INFO)
 
@@ -57,7 +58,10 @@ def setup_logger(dataset_name: str, method: str):
     log_dir = os.path.join("logs", dataset_name.lower())
     os.makedirs(log_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_path = os.path.join(log_dir, f"{method}_{timestamp}.log")
+    if step == 0:  # DQN 아닌 경우
+        log_path = os.path.join(log_dir, f"{method}_{timestamp}.log")
+    else:
+        log_path = os.path.join(log_dir, f"{method}_{step}step_{timestamp}.log")
 
     formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
 
@@ -208,7 +212,7 @@ def evaluate(model: nn.Module, dataloader: DataLoader, criterion: nn.Module, dev
     return avg_loss, acc
 
 
-def active_learning(dataset_name: str, data_root: str, device: torch.device, method:str, initial_labeled: int, addendum: int, logger: logging.Logger):
+def active_learning(dataset_name: str, data_root: str, device: torch.device, method:str, initial_labeled: int, addendum: int, logger: logging.Logger, train_steps: int):
     train_set, test_set, num_classes = get_datasets(dataset_name, data_root)
 
     num_train = len(train_set)
@@ -280,12 +284,15 @@ def active_learning(dataset_name: str, data_root: str, device: torch.device, met
         if method == "random":
             labeled_set, unlabeled_indices = random_sampling(labeled_set, unlabeled_indices, addendum)
         elif method =="DQN":
-            labeled_set, unlabeled_indices, dqn_agent = DQN_sampling(labeled_set, unlabeled_indices, addendum, model, train_set, device, agent=dqn_agent, num_classes=num_classes)
+            labeled_set, unlabeled_indices, dqn_agent = DQN_sampling(labeled_set, unlabeled_indices, addendum, model, train_set, device, agent=dqn_agent, num_classes=num_classes, train_steps=train_steps)
 
     # 마지막 cycle 이후 model 저장
     save_dir = os.path.join("./checkpoints", dataset_name.lower())
     os.makedirs(save_dir, exist_ok=True)
-    save_path = os.path.join(save_dir, f"resnet18_{method}.pth")
+    if step == 0:  # DQN 아닌 경우
+        save_path = os.path.join(save_dir, f"resnet18_{method}.pth")
+    else:
+        save_path = os.path.join(save_dir, f"resnet18_{method}_{train_steps}.pth")
     torch.save({"state_dict": model.state_dict()}, save_path)
     logger.info(f"Saved checkpoint to: {save_path}")
 
@@ -305,13 +312,25 @@ def main():
         choices=["random", "DQN"]  # 강화학습 방식 선택 가능하도록 추가 필수
     )
     parser.add_argument(
+        "--step",
+        type=int,
+        default=200
+    )
+    parser.add_argument(
         "--gpu",
         type=int,
         default=None
     )
 
     args = parser.parse_args()
-    logger = setup_logger(args.dataset, args.method)
+
+    method = args.method
+    if method == "DQN":
+        step = args.step
+    else:
+        step = 0
+
+    logger = setup_logger(args.dataset, method, step)
 
     # GPU 선택
     if torch.cuda.is_available():
@@ -334,10 +353,7 @@ def main():
         initial_labeled = INITIAL_LABELED
         addendum = ADDENDUM
 
-    # Sampling 방법 선택
-    method = args.method
-
-    active_learning(args.dataset, data_root, device, method, initial_labeled, addendum, logger)
+    active_learning(args.dataset, data_root, device, method, initial_labeled, addendum, logger, step)
 
 
 if __name__ == "__main__":
