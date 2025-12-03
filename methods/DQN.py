@@ -1,13 +1,13 @@
 import random
-from typing import List, Sequence, Tuple, Optional
-
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+
 from torch.utils.data import Dataset
 from tqdm import tqdm
+from typing import List, Sequence, Tuple, Optional
 
 
 class ReplayBuffer:
@@ -40,6 +40,7 @@ class ReplayBuffer:
         states = torch.stack([self.states[i] for i in idxs], dim=0)
         actions = torch.tensor([self.actions[i] for i in idxs], dtype=torch.long)
         rewards = torch.tensor([self.rewards[i] for i in idxs], dtype=torch.float32)
+
         return states, actions, rewards
 
 
@@ -102,6 +103,7 @@ class DQNAgent:
             return
 
         self.q_net.train()
+
         for _ in tqdm(range(grad_steps), desc="DQN train steps", leave=False):
             states, actions, rewards = self.buffer.sample(self.batch_size)
             states = states.to(self.device)
@@ -142,6 +144,7 @@ def _build_state_from_logits(logits: torch.Tensor, num_classes: int):
     state = torch.cat(
         [probs, max_prob.unsqueeze(0), margin.unsqueeze(0), entropy.unsqueeze(0)], dim=0
     )  # [C+3]
+
     return state
 
 

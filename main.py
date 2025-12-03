@@ -37,6 +37,7 @@ from config import *
 from methods.random import random_sampling
 from methods.DQN import DQNAgent, DQN_sampling
 
+
 # Seed
 def set_seed(seed: int):
     random.seed(seed)
@@ -46,7 +47,7 @@ def set_seed(seed: int):
         torch.cuda.manual_seed_all(seed)
 
 
-def setup_logger(dataset_name: str, method: str) -> logging.Logger:
+def setup_logger(dataset_name: str, method: str):
     logger = logging.getLogger("active_learning")
     logger.setLevel(logging.INFO)
 
@@ -85,14 +86,14 @@ def get_transforms(dataset_name: str):
                 T.RandomHorizontalFlip(),
                 T.RandomCrop(size=32, padding=4),
                 T.ToTensor(),
-                T.Normalize(mean, std),
+                T.Normalize(mean, std)
             ]
         )
 
         test_transform = T.Compose(
             [
                 T.ToTensor(),
-                T.Normalize(mean, std),
+                T.Normalize(mean, std)
             ]
         )
     elif dataset_name == "fashionmnist":
@@ -105,7 +106,7 @@ def get_transforms(dataset_name: str):
                 T.RandomHorizontalFlip(),
                 T.RandomCrop(size=32, padding=4),
                 T.ToTensor(),
-                T.Normalize(mean, std),
+                T.Normalize(mean, std)
             ]
         )
 
@@ -114,7 +115,7 @@ def get_transforms(dataset_name: str):
                 T.Resize(32),
                 T.Grayscale(num_output_channels=3),
                 T.ToTensor(),
-                T.Normalize(mean, std),
+                T.Normalize(mean, std)
             ]
         )
     else:
@@ -177,6 +178,7 @@ def train_one_epoch(model: nn.Module, dataloader: DataLoader, criterion: nn.Modu
 
     avg_loss = total_loss / max(total, 1)
     acc = correct / max(total, 1)
+
     return avg_loss, acc
 
 
@@ -202,6 +204,7 @@ def evaluate(model: nn.Module, dataloader: DataLoader, criterion: nn.Module, dev
 
     avg_loss = total_loss / max(total, 1)
     acc = correct / max(total, 1)
+
     return avg_loss, acc
 
 
@@ -232,14 +235,14 @@ def active_learning(dataset_name: str, data_root: str, device: torch.device, met
             batch_size=BATCH,
             sampler=SubsetRandomSampler(labeled_set),
             num_workers=NUM_WORKERS,
-            pin_memory=(device.type == "cuda"),
+            pin_memory=(device.type == "cuda")
         )
         test_loader = DataLoader(
             test_set,
             batch_size=BATCH,
             shuffle=False,
             num_workers=NUM_WORKERS,
-            pin_memory=(device.type == "cuda"),
+            pin_memory=(device.type == "cuda")
         )
 
         # Optimization setup
