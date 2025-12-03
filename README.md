@@ -10,6 +10,9 @@
 
 <img src="/asset/result.png" alt="Logo" width="100%"></div>
 
+## About Project
+프로젝트에 대한 설명은 [링크](https://www.google.com)를 통해 확인 부탁드립니다.
+
 ## Installation
 1. 가상 환경 세팅
 ```
@@ -40,7 +43,7 @@ Sampling 기법 별로 학습된 최종 cycle의 weight를 활용하여 Image cl
 python test.py
 ```
 
-### Ready for test
+### Ready for Test
 Pretrained된 model을 [링크](https://www.google.com)에서 다운로드 후, 아래와 같이 폴더를 구성 후 test 진행
 ```
 ${ROOT} 
