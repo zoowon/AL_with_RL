@@ -56,7 +56,7 @@ ${ROOT}
 |   |   |-- random.pth
 |   |   |-- DQN_100step.pth
 |   |   |-- DQN_200step.pth
-|   |-- InterCap
+|   |-- fashionmnist
 |   |   |-- random.pth
 |   |   |-- DQN_100step.pth
 |   |   |-- DQN_200step.pth
