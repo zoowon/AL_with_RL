@@ -289,7 +289,7 @@ def active_learning(dataset_name: str, data_root: str, device: torch.device, met
     # 마지막 cycle 이후 model 저장
     save_dir = os.path.join("./checkpoints", dataset_name.lower())
     os.makedirs(save_dir, exist_ok=True)
-    if step == 0:  # DQN 아닌 경우
+    if train_steps == 0:  # DQN 아닌 경우
         save_path = os.path.join(save_dir, f"resnet18_{method}.pth")
     else:
         save_path = os.path.join(save_dir, f"resnet18_{method}_{train_steps}.pth")
