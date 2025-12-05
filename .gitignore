@@ -1,11 +1,7 @@
-# 데이터셋, 실험 결과 제외
 data/
 checkpoints/
-logs/
-
-# 캐시/로그/임시 파일
 __pycache__/
-*.log
+
 *.pkl
 *.npy
 *.npz
@@ -13,8 +9,5 @@ __pycache__/
 *.tar
 *.zip
 
-# Jupyter
 .ipynb_checkpoints/
-
-# 기타
 .idea/

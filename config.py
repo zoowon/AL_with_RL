@@ -1,3 +1,9 @@
+import time
+
+# RANDOM_SEED = 0
+time_seed = int(time.time())
+RANDOM_SEED = time_seed
+
 NUM_TRAIN = 50000
 NUM_VAL   = 50000 - NUM_TRAIN
 BATCH     = 128 # B
@@ -15,4 +21,3 @@ EPOCHL = 120  # After 120 epochs, stop the gradient from the loss prediction mod
 MOMENTUM = 0.9
 WDECAY = 5e-4
 NUM_WORKERS = 4
-RANDOM_SEED = 0
