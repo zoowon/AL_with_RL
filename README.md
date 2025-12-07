@@ -63,16 +63,16 @@ Active learning 파이프라인은 다음과 같은 반복 프로세스를 따�
 [Active Learning 실험 절차]
 
 1. 초기화
-   - 라벨링된 샘플: 1,000개
-   - 미라벨링 샘플: 49,000개
+   - 라벨링된 샘플: N개
+   - 미라벨링 샘플: (50,000-N)개
 
 2. 각 사이클 t = 1 ... 10 에서
    2-1. 현재 라벨링된 데이터로 분류기(ResNet-18) 학습
    2-2. 테스트셋에서 성능 평가
-   2-3. 미라벨링 샘플 중 정보가 많은 1,000개 선택
+   2-3. 미라벨링 샘플 중 정보가 많은 K 개 선택
         * Random: 균등 랜덤 샘플링
         * DQN: 학습된 선택 정책으로 샘플링
-   2-4. 선택된 1,000개를 라벨링된 데이터셋에 추가
+   2-4. 선택된 K개를 라벨링된 데이터셋에 추가
 
 3. 마지막 사이클 이후
    - 최종 모델 체크포인트 저장
@@ -181,14 +181,14 @@ reward = 0.0  if 분류기가 올바른 라벨을 예측
 | 파라미터 | 값 | 설명 |
 |-----------|-------|-------------|
 | **Active Learning** |
-| Initial Labeled | 1,000 | 시작 라벨링 샘플 수 |
-| Addendum (K) | 1,000 | 사이클당 추가되는 샘플 수 |
+| Initial Labeled (N) | 1,000 또는 2,000 (CIFAR-100) | 시작 라벨링 샘플 수 |
+| Addendum (K) | 1,000 또는 2,000 (CIFAR-100) | 사이클당 추가되는 샘플 수 |
 | Cycles | 10 | 총 AL 반복 횟수 |
 | **분류기 학습** |
 | Epochs | 200 | 사이클당 학습 에폭 수 |
 | Batch Size | 128 | 미니배치 크기 |
 | Learning Rate | 0.1 | 초기 학습률 (SGD) |
-| LR Milestones | [160] | 학습률 감소 에폭 |
+| LR Milestones | 160 | 학습률 감소 에폭 |
 | Gamma | 0.1 | 학습률 감소 계수 |
 | **DQN 설정** |
 | Hidden Dim | 128 | Q-network 은닉층 유닛 수 |
@@ -203,40 +203,40 @@ reward = 0.0  if 분류기가 올바른 라벨을 예측
 
 ```
 AL_with_RL/
-├── main.py                 # 메인 학습 스크립트
-├── config.py              # 하이퍼파라미터 설정
-├── requirements.txt       # Python 의존성
+├── main.py               # 메인 학습 스크립트
+├── config.py             # 하이퍼파라미터 설정
+├── requirements.txt      # Python 의존성
 ├── setup.sh              # 환경 설정 스크립트
 ├── README.md             # 본 파일
 │
 ├── methods/              # 샘플링 전략
 │   ├── random.py         # Random baseline 샘플러
-│   └── DQN.py           # DQN 기반 샘플러
-│       ├── ReplayBuffer     # Experience replay
-│       ├── QNetwork         # Q-value 네트워크
-│       ├── DQNAgent        # DQN 학습 로직
-│       └── DQN_sampling    # 샘플 선택 함수
+│   └── DQN.py            # DQN 기반 샘플러
+│       ├── ReplayBuffer  # Experience replay
+│       ├── QNetwork      # Q-value 네트워크
+│       ├── DQNAgent      # DQN 학습 로직
+│       └── DQN_sampling  # 샘플 선택 함수
 │
-├── models/              # 신경망 모델
-│   ├── resnet.py        # ResNet-18 분류기
-│   └── sampler.py       # 커스텀 데이터 샘플러
+├── models/               # 신경망 모델
+│   ├── resnet.py         # ResNet-18 분류기
+│   └── sampler.py        # 커스텀 데이터 샘플러
 │
-├── data/               # 데이터셋 저장소 (자동 다운로드)
+├── data/                 # 데이터셋 저장소 (자동 다운로드)
 │   ├── cifar10/
 │   ├── cifar100/
 │   └── fashionmnist/
 │
-├── checkpoints/        # 저장된 모델 가중치
+├── checkpoints/          # 저장된 모델 가중치
 │   ├── cifar10/
 │   ├── cifar100/
 │   └── fashionmnist/
 │
-├── logs/              # 학습 로그
+├── logs/                 # 학습 로그
 │   ├── cifar10/
 │   ├── cifar100/
 │   └── fashionmnist/
 │
-└── asset/            # README용 자료
+└── asset/                # README용 자료
     └── active_learning_accuracy_all.png
     └── active_learning_relative_all.png
 ```
