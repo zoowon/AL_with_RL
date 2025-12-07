@@ -11,7 +11,7 @@
 
 *2025-2 Reinforcement Learning Course Project*
 
-<img src="/asset/result.png" alt="Results" width="100%">
+<img src="/asset/active_learning_relative_all.png" alt="Results" width="100%">
 
 </div>
 
@@ -237,7 +237,8 @@ AL_with_RL/
 │   └── fashionmnist/
 │
 └── asset/            # README용 자료
-    └── result.png
+    └── active_learning_accuracy_all.png
+    └── active_learning_relative_all.png
 ```
 
 ---
@@ -278,14 +279,14 @@ pip install numpy==1.21.6 tqdm==4.66.2
 
 실험에 사용된 사전 학습된 모델 체크포인트는 다음 Google Drive 링크에서 다운로드할 수 있습니다:
 
-**📥 [다운로드 링크](https://drive.google.com/drive/folders/YOUR_FOLDER_ID)**
+**📥 [다운로드 링크](https://drive.google.com/drive/folders/1XTuVJQ7raXbRQ53PB5zzwCeDJwUx--2x?usp=drive_link)**
 
 다운로드 후 압축을 해제하고 프로젝트 루트의 `checkpoints/` 디렉토리에 배치하세요:
 
 포함된 모델:
-- ✅ CIFAR-10: Random 및 DQN (100~500 steps)
-- ✅ CIFAR-100: Random 및 DQN (100~500 steps)
-- ✅ FashionMNIST: Random 및 DQN (100~500 steps)
+- ✅ CIFAR-10: DQN (200 steps)
+- ✅ CIFAR-100: DQN (100 steps)
+- ✅ FashionMNIST: DQN (100 steps)
 
 ---
 
@@ -431,9 +432,11 @@ logs/
     └── ...
 ```
 
-### 예상 결과
+### 결과
 
-<img src="/asset/result.png" alt="Results Visualization" width="100%">
+<img src="/asset/active_learning_accuracy_all.png" alt="Accuracy Visualization" width="100%">
+
+<img src="/asset/active_learning_relative_all.png" alt="Relative Improvement Visualization" width="100%">
 
 *데이터셋 및 gradient step에 따른 Random vs. DQN 샘플링 비교*
 
@@ -451,7 +454,7 @@ logs/
 
 ### 프레임워크 및 도구
 
-- **PyTorch**: 딥러닝 프레임워크 ([pytorch.org](https://pytorch.org))
+- **PyTorch**: 딥러닝 프레임워크
 - **Torchvision**: 컴퓨터 비전 데이터셋 및 모델
 - **NumPy**: 수치 연산 라이브러리
 
@@ -468,6 +471,6 @@ logs/
 
 <div align="center">
 
-**상세한 프로젝트 보고서 및 분석은 [프로젝트 보고서](https://www.google.com)를 참조하세요**
+**상세한 프로젝트 보고서 및 분석은 [프로젝트 보고서](https://drive.google.com/drive/folders/1XTuVJQ7raXbRQ53PB5zzwCeDJwUx--2x?usp=drive_link)를 참조하세요**
 
 </div>
