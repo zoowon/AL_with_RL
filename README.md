@@ -11,6 +11,8 @@
 
 *2025-2 Reinforcement Learning Course Project*
 
+**상세한 프로젝트 보고서 및 분석은 [프로젝트 보고서](https://github.com/zoowon/AL_with_RL/tree/main/Report)를 참조하세요**
+
 <img src="/asset/active_learning_relative_all.png" alt="Results" width="100%">
 
 </div>
@@ -461,6 +463,6 @@ logs/
 
 <div align="center">
 
-**상세한 프로젝트 보고서 및 분석은 [프로젝트 보고서](https://drive.google.com/drive/folders/1XTuVJQ7raXbRQ53PB5zzwCeDJwUx--2x?usp=drive_link)를 참조하세요**
+**상세한 프로젝트 보고서 및 분석은 [프로젝트 보고서](https://github.com/zoowon/AL_with_RL/tree/main/Report)를 참조하세요**
 
 </div>
