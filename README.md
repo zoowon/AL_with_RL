@@ -355,16 +355,6 @@ logs/<dataset>/<method>_[<step>step_]<timestamp>.log
 checkpoints/<dataset>/resnet18_<method>[_<step>].pth
 ```
 
-### 테스트
-
-사전 학습된 모델을 테스트셋에서 평가:
-
-```bash
-python test.py
-```
-
----
-
 ## 🧪 실험
 
 ### 실험 설정

@@ -37,28 +37,3 @@ Sampling method는 random, DQN 중에서 선택
 Gradient step은 method가 DQN인 경우에만 int 형으로 기입 (이외에는 무효)
 
 GPU의 default값은 0
-
-## Test
-Sampling 기법 별로 학습된 최종 cycle의 weight를 활용하여 Image classification 진행
-```
-python test.py
-```
-
-### Ready for Test
-Pretrained된 model을 [링크](https://www.google.com)에서 다운로드 후, 아래와 같이 폴더를 구성 후 test 진행
-```
-${ROOT} 
-|-- checkpoints  
-|   |-- cifar10
-|   |   |-- random.pth
-|   |   |-- DQN_100step.pth
-|   |   |-- DQN_200step.pth
-|   |-- cifar100
-|   |   |-- random.pth
-|   |   |-- DQN_100step.pth
-|   |   |-- DQN_200step.pth
-|   |-- fashionmnist
-|   |   |-- random.pth
-|   |   |-- DQN_100step.pth
-|   |   |-- DQN_200step.pth
-```
